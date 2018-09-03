@@ -1,8 +1,8 @@
 ﻿########################################################################################################################
-# FILENAME:		toolbox.ps1
+# FILENAME:		toolbox1.0.ps1
 # CREATED BY:	Bo Behrmann Jensen (bbhj)
 # CREATED:		2017.06.17
-# DESCRIPTION:  NNIT Application Services Powershell Function Collection Toolbox
+# DESCRIPTION:  NNIT Application Services Powershell Function Collection Toolbox Release
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
@@ -12,12 +12,16 @@
 # 0.4		2017.12.18	rahd       	Modified Function LogToEventlog
 # 0.5		2017.12.22	rahd       	Modified Function CheckUrl
 # 1.0		2018.01.12	rahd        Finalized Version 1.0 (No modifications)
+# 1.0.1		2018.02.15	rahd        Added Greeting message
+# 1.1		2018.03.22	rahd        Modified Function ShowServiceStatus
+# 1.2		2018.03.27	rahd        Modified Function StopService
 #
 ########################################################################################################################
-# CURRENT VERSION: 1.0
+# CURRENT VERSION: 1.2
 ########################################################################################################################
 
-
+Write-host "Importing Function Library | Toolbox1.0.ps1 | " -ForegroundColor Yellow -NoNewline
+Write-Host "Current Version: 1.0.1" -ForegroundColor Yellow
 
 ########################################################################################################################
 #
@@ -26,7 +30,7 @@
 #
 # Parameters:
 # -service [service that should be stopped (Either Service Name or Display Name)]
-# -server [server that the service is running on, default=localhost]
+# -server [server that the service is running on]
 # -startuptype [startup mode that the service will be set to after it has been stopped, default=Disabled]
 #
 ########################################################################################################################
@@ -34,6 +38,7 @@
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.06	rahd       	Modified "Set-Service -Name $service" to "Set-Service -Name $servicestatus.Name"
+# 0.3		2018.03.27	rahd       	Added $force switch and if ($force) statement
 #
 ########################################################################################################################
 function StopService
@@ -43,18 +48,24 @@ function StopService
     [Parameter(Mandatory=$True)]
     [String]$service,
     [Parameter(Mandatory=$True)]
-    [String]$server = "localhost",
-    [String]$startuptype = "Disabled"
+    [String]$server,
+    [String]$startuptype = "Disabled",
+    [switch]$force
     )
 
     $servicestatus = Get-Service -Name $service -ComputerName $server
     if ($servicestatus.Status -eq "Stopped")
     {
-        Write-host "The $service on $server is already Started"
+        Write-host "The $service on $server is already Stopped"
     }
     Else {
         Write-Host "Stopping $service on $server and setting it to $startuptype"
-        stop-service -inputobject $servicestatus -Force -ErrorAction SilentlyContinue
+        if ($force){
+            stop-service -inputobject $servicestatus -Force -ErrorAction SilentlyContinue
+        }
+        else{
+            stop-service -inputobject $servicestatus -ErrorAction SilentlyContinue
+        }
         Set-Service -Name $servicestatus.Name -ComputerName $server -StartupType $startuptype
     }
 }
@@ -122,7 +133,7 @@ function StartService
     [Parameter(Mandatory=$True)]
     [String]$service,
     [Parameter(Mandatory=$True)]
-    [String]$server = "localhost",
+    [String]$server,
     [String]$startuptype = "Automatic"
     )
 
@@ -191,6 +202,7 @@ function StartServiceParallel
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.11	rahd       	Added check for non-existant service
+# 0.3		2018.03.22	rahd       	Added check for .status (Starting and Stoppping)
 #
 ########################################################################################################################
 function ShowServiceStatus
@@ -207,6 +219,12 @@ function ShowServiceStatus
         if(($servicestatus.Status -eq "Running") -or ($servicestatus.Status -eq "Started")){
             Write-Host -ForegroundColor Green "Started"
            }
+        elseif($servicestatus.Status -eq "Starting"){
+            Write-Host -ForegroundColor Yellow "Starting"
+        }
+        elseif($servicestatus.Status -eq "Stopping"){
+            Write-Host -ForegroundColor Red "Stopping"
+        }
         else{
             Write-Host -ForegroundColor Red "Stopped"
         }
@@ -296,7 +314,7 @@ function ConfirmContinue
 #
 # Parameters:
 # -message [message to print to screen]
-# -FrontColor [Text Color Deafault=White]
+# -FrontColor [Text Color Default=White]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -456,6 +474,7 @@ function GetUptime
 # Parameters:
 # -eventlog_source [specify the eventlog application source]
 # -Message [specify the message added to the eventlog entry]
+# -Server [specify the server to create the log entry on Default=Localhost]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -765,7 +784,7 @@ function CheckUrl
 # Description: restart a specified windows server and wait for powershell to be available again on the host before proceeding
 #
 # Parameters:
-# -server [server that the service is running on, default=localhost]
+# -server [server to be restarted]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -790,7 +809,7 @@ function RestartHost
 # Description: restart a specified windows server and wait for a specified time for powershell to be available again on the host before proceeding
 #
 # Parameters:
-# -server [server that the service is running on, default=localhost]
+# -server [server to be restarted]
 # -time [specify the timeout to wait until powershell is available again before continuing, default=0]
 #
 ########################################################################################################################
