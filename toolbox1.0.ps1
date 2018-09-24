@@ -6,17 +6,17 @@
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
-# 0.1		2017.06.17	bbhj       	Initial version created
-# 0.2		2017.12.06	rahd       	Modified Functions StopService, StartService
-# 0.3		2017.12.06	rahd       	Added Function CheckFile, modified functions ShowServiceStatus, Wait
-# 0.4		2017.12.18	rahd       	Modified Function LogToEventlog
-# 0.5		2017.12.22	rahd        Modified Function CheckUrl
-# 1.0		2018.01.12	rahd        Finalized Version 1.0 (No modifications)
-# 1.0.1		2018.02.15	rahd        Added Greeting message
-# 1.1		2018.03.22	rahd        Modified Function ShowServiceStatus
-# 1.2		2018.03.27	rahd        Modified Function StopService
-# 1.3		2018.04.04	rahd        Removed function Echo
-# 1.4		2018.04.04	rahd        Modified Function ShowServiceStatus to accepts CSV input
+# 0.1       2017.06.17	bbhj        Initial version created
+# 0.2       2017.12.06	rahd        Modified Functions StopService, StartService
+# 0.3       2017.12.06	rahd        Added Function CheckFile, modified functions ShowServiceStatus, Wait
+# 0.4       2017.12.18	rahd        Modified Function LogToEventlog
+# 0.5       2017.12.22	rahd        Modified Function CheckUrl
+# 1.0       2018.01.12	rahd        Finalized Version 1.0 (No modifications)
+# 1.0.1     2018.02.15	rahd        Added Greeting message
+# 1.1       2018.03.22	rahd        Modified Function ShowServiceStatus
+# 1.2       2018.03.27	rahd        Modified Function StopService
+# 1.3       2018.04.04	rahd        Removed function Echo
+# 1.4       2018.04.04	rahd        Modified Function ShowServiceStatus to accepts CSV input
 #
 ########################################################################################################################
 
