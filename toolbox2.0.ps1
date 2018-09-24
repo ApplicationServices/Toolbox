@@ -1,8 +1,8 @@
 ﻿########################################################################################################################
 # FILENAME:		toolbox2.0.ps1
-# CREATED BY:	Rasmus Ahrendt Deleuran (rahd)
+# CREATED BY:	rahd
 # CREATED:		2018.01.22
-# DESCRIPTION:  NNIT Application Services Powershell Function Collection Toolbox 2.0 Release
+# DESCRIPTION:  Powershell Function Collection Toolbox 2.0 Release
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
