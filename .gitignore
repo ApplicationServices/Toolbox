@@ -1,0 +1,6 @@
+# Ignore temp files
+*~
+*.tmp
+
+# Ignore sub directory /ignore/
+ignore/

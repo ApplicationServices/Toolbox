@@ -1,25 +1,26 @@
 ﻿########################################################################################################################
 # FILENAME:		toolbox1.0.ps1
-# CREATED BY:		Bo Behrmann Jensen (bbhj)
+# CREATED BY:	Bo Behrmann Jensen (bbhj)
 # CREATED:		2017.06.17
-# DESCRIPTION:  	NNIT Application Services Powershell Function Collection Toolbox Release
+# DESCRIPTION:  NNIT Application Services Powershell Function Collection Toolbox Release
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
-# 0.1		2017.06.17	bbhj       	Initial version created
-# 0.2		2017.12.06	rahd       	Modified Functions StopService, StartService
-# 0.3		2017.12.06	rahd       	Added Function CheckFile, modified functions ShowServiceStatus, Wait
-# 0.4		2017.12.18	rahd       	Modified Function LogToEventlog
-# 0.5		2017.12.22	rahd       	Modified Function CheckUrl
-# 1.0		2018.01.12	rahd        	Finalized Version 1.0 (No modifications)
-# 1.0.1		2018.02.15	rahd        	Added Greeting message
-# 1.1		2018.03.22	rahd        	Modified Function ShowServiceStatus
-# 1.2		2018.03.27	rahd        	Modified Function StopService
-# 1.3		2018.04.04	rahd        	Removed function Echo
+# 0.1       2017.06.17	bbhj        Initial version created
+# 0.2       2017.12.06	rahd        Modified Functions StopService, StartService
+# 0.3       2017.12.06	rahd        Added Function CheckFile, modified functions ShowServiceStatus, Wait
+# 0.4       2017.12.18	rahd        Modified Function LogToEventlog
+# 0.5       2017.12.22	rahd        Modified Function CheckUrl
+# 1.0       2018.01.12	rahd        Finalized Version 1.0 (No modifications)
+# 1.0.1     2018.02.15	rahd        Added Greeting message
+# 1.1       2018.03.22	rahd        Modified Function ShowServiceStatus
+# 1.2       2018.03.27	rahd        Modified Function StopService
+# 1.3       2018.04.04	rahd        Removed function Echo
+# 1.4       2018.04.04	rahd        Modified Function ShowServiceStatus to accepts CSV input
 #
 ########################################################################################################################
 
-$currentversion = "1.3"
+$currentversion = "1.4"
 
 Write-host "Importing Function Library | Toolbox1.0.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
@@ -204,6 +205,8 @@ function StartServiceParallel
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.11	rahd       	Added check for non-existant service
 # 0.3		2018.03.22	rahd       	Added check for .status (Starting and Stoppping)
+# 0.4		2018.09.24	rahd       	Refactored $service parameter to accept multiple comma separated services in an array
+# 0.5		2018.09.24	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
 #
 ########################################################################################################################
 function ShowServiceStatus
@@ -211,27 +214,30 @@ function ShowServiceStatus
     param
     (
     [Parameter(Mandatory=$True)]
-    [String]$service,
-    [String]$server = "localhost"
+    [String[]]$service,
+    [String[]]$server = "localhost"
     )
-
-    Write-Host "$service service on $server is: " -nonewline
-    if($servicestatus = Get-Service -Name $service -ComputerName $server -ErrorAction SilentlyContinue){
-        if(($servicestatus.Status -eq "Running") -or ($servicestatus.Status -eq "Started")){
-            Write-Host -ForegroundColor Green "Started"
-           }
-        elseif($servicestatus.Status -eq "Starting"){
-            Write-Host -ForegroundColor Yellow "Starting"
+    foreach ($srv in $server){
+        foreach ($svc in $service){
+            Write-Host "$svc service on $srv is: " -nonewline
+            if($servicestatus = Get-Service -Name $svc -ComputerName $server -ErrorAction SilentlyContinue){
+                if(($servicestatus.Status -eq "Running") -or ($servicestatus.Status -eq "Started")){
+                    Write-Host -ForegroundColor Green "Started"
+                   }
+                elseif($servicestatus.Status -eq "Starting"){
+                    Write-Host -ForegroundColor Yellow "Starting"
+                }
+                elseif($servicestatus.Status -eq "Stopping"){
+                    Write-Host -ForegroundColor Red "Stopping"
+                }
+                else{
+                    Write-Host -ForegroundColor Red "Stopped"
+                }
+            }
+            else{
+                Write-Host -ForegroundColor DarkGray "Non-Existant"
+            }
         }
-        elseif($servicestatus.Status -eq "Stopping"){
-            Write-Host -ForegroundColor Red "Stopping"
-        }
-        else{
-            Write-Host -ForegroundColor Red "Stopped"
-        }
-    }
-    else{
-        Write-Host -ForegroundColor DarkGray "Non-Existant"
     }
 }
 
