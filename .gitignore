@@ -1,6 +1,7 @@
 # Ignore temp files
 *~
 *.tmp
+*.old
 
 # Ignore sub directory /ignore/
 ignore/
