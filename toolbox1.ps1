@@ -1,5 +1,5 @@
 ﻿########################################################################################################################
-# FILENAME:		toolbox1.ps1
+# FILENAME:		toolbox1.0.ps1
 # CREATED BY:	bbhj
 # CREATED:		2017.06.17
 # DESCRIPTION:  Application Services Powershell Function Collection Toolbox Release
@@ -18,10 +18,11 @@
 # 1.3		2018.04.04	rahd        Removed function Echo
 # 1.4		2018.04.04	rahd        Modified Function ShowServiceStatus to accepts CSV input
 # 1.4.1		2018.10.16	rahd        Anonymized Headers
+# 1.5		2018.12.18	rahd        Corrected Indenture, Versioning, Description and Capitalization acc. to Code review 
 #
 ########################################################################################################################
 
-$currentversion = "1.4.1"
+$currentversion = "1.5"
 
 Write-host "Importing Function Library | Toolbox1.0.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
@@ -32,9 +33,10 @@ Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
 # Description: Stop a Windows service on a specified Windows server
 #
 # Parameters:
-# -service [service that should be stopped (Either Service Name or Display Name)]
-# -server [server that the service is running on]
-# -startuptype [startup mode that the service will be set to after it has been stopped, default=Disabled]
+# -Service [service that should be stopped (Either Service Name or Display Name)]
+# -Server [server that the service is running on]
+# -Startuptype [startup mode that the service will be set to after it has been stopped, default=Disabled]
+# -Force [switch to set -force parameter on stop-service commandlet]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -42,73 +44,69 @@ Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.06	rahd       	Modified "Set-Service -Name $service" to "Set-Service -Name $servicestatus.Name"
 # 0.3		2018.03.27	rahd       	Added $force switch and if ($force) statement
+# 0.4		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
+# 0.5		2018.12.18	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopService
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$service,
-    [Parameter(Mandatory=$True)]
-    [String]$server,
-    [String]$startuptype = "Disabled",
-    [switch]$force
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Service,
+        [Parameter(Position=1, Mandatory=$True)][String]$Server,
+        [Parameter(Position=2)][ValidateSet('Manual', 'Disabled')][String]$Startuptype = "Disabled",
+        [switch]$Force
     )
 
-    $servicestatus = Get-Service -Name $service -ComputerName $server
-    if ($servicestatus.Status -eq "Stopped")
-    {
-        Write-host "The $service on $server is already Stopped"
+    $Servicestatus = Get-Service -Name $Service -ComputerName $Server
+    if ($Servicestatus.Status -eq "Stopped"){
+        Write-host "The $Service on $Server is already Stopped"
     }
-    Else {
-        Write-Host "Stopping $service on $server and setting it to $startuptype"
-        if ($force){
-            stop-service -inputobject $servicestatus -Force -ErrorAction SilentlyContinue
+    Else{
+        Write-Host "Stopping $Service on $Server and setting it to $startuptype"
+        if ($Force){
+            stop-service -inputobject $Servicestatus -Force -ErrorAction SilentlyContinue
         }
         else{
-            stop-service -inputobject $servicestatus -ErrorAction SilentlyContinue
+            stop-service -inputobject $Servicestatus -ErrorAction SilentlyContinue
         }
-        Set-Service -Name $servicestatus.Name -ComputerName $server -StartupType $startuptype
+        Set-Service -Name $Servicestatus.Name -ComputerName $Server -StartupType $Startuptype
     }
 }
 
 ########################################################################################################################
 #
 # Function: StopServiceParallel
-# Description: Stop a Windows service on a specified Windows server
+# Description: Stop a Windows service on a specified Windows server, running as a seperate PS Job to enable parallelization
 #
 # Parameters:
-# -service [service that should be stopped]
-# -server [server that the service is running on, default=localhost]
-# -startuptype [startup mode that the service will be set to after it has been stopped, default=Disabled]
+# -Service [service that should be stopped]
+# -Server [server that the service is running on, default=$env:COMPUTERNAME]
+# -Startuptype [startup mode that the service will be set to after it has been stopped, default=Disabled]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
+# 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopServiceParallel
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$service,
-    [Parameter(Mandatory=$True)]
-    [String]$server = "localhost",
-    [String]$startuptype = "Disabled"
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Service,
+        [Parameter(Position=1, Mandatory=$True)][String]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=2)][ValidateSet('Manual', 'Disabled')][String]$Startuptype = "Disabled"
     )
     
-    $servicestatus = Get-Service -Name $service -ComputerName $server
-    if ($servicestatus.Status -eq "Stopped")
-    {
-        Write-host "The $service on $server is already Started"
+    $Servicestatus = Get-Service -Name $Service -ComputerName $Server
+    if ($Servicestatus.Status -eq "Stopped"){
+        Write-host "The $Service on $Server is already Stopped"
     }
-    Else {
-        Write-Host "Stopping $service on $server and setting it to $startuptype"
-        Start-Job -ScriptBlock{stop-service -inputobject $servicestatus}
-        Set-Service -Name $service -ComputerName $server -StartupType $startuptype
+    Else{
+        Write-Host "Stopping $Service on $Server and setting it to $Startuptype"
+        Start-Job -ScriptBlock{stop-service -inputobject $Servicestatus}
+        Set-Service -Name $Service -ComputerName $Server -StartupType $Startuptype
     }
 }
 
@@ -118,76 +116,72 @@ function StopServiceParallel
 # Description: Start a Windows service on a specified Windows server
 #
 # Parameters:
-# -service [service that should be started (Either Service Name or Display Name)]
-# -server [server that the service is running on, default=localhost]
-# -startuptype [startup mode that the service will be set to after it has been started, default=Automatic]
+# -Service [service that should be started (Either Service Name or Display Name)]
+# -Server [server that the service is running on, default=$env:COMPUTERNAME]
+# -Startuptype [startup mode that the service will be set to after it has been started, default=Automatic]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.06	rahd       	Modified "Set-Service -Name $service" to "Set-Service -Name $servicestatus.Name"
+# 0.3		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
+# 0.4		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StartService
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$service,
-    [Parameter(Mandatory=$True)]
-    [String]$server,
-    [String]$startuptype = "Automatic"
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Service,
+        [Parameter(Position=1, Mandatory=$True)][String]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=2)][ValidateSet('Automatic', 'AutomaticDelayedStart', 'Manual')][String]$Startuptype = "Automatic"
     )
 
-    $servicestatus = Get-Service -Name $service -ComputerName $server
-    if ($servicestatus.Status -eq "Running")
-    {
+    $Servicestatus = Get-Service -Name $Service -ComputerName $Server
+    if ($Servicestatus.Status -eq "Running"){
         Write-host "The $service on $server is already Started"
     }
-    Else {
-        Write-Host "Starting $service on $server and setting it to $startuptype"
-        Set-Service -Name $servicestatus.Name -ComputerName $server -StartupType $startuptype
-        start-service -inputobject $servicestatus
+    Else{
+        Write-Host "Starting $Service on $server and setting it to $Startuptype"
+        Set-Service -Name $Servicestatus.Name -ComputerName $Server -StartupType $Startuptype
+        start-service -inputobject $Servicestatus
     }
 }
 
 ########################################################################################################################
 #
 # Function: StartServiceParallel
-# Description: Start a Windows service on a specified Windows server
+# Description: Start a Windows service on a specified Windows server, running as a seperate PS Job to enable parallelization
 #
 # Parameters:
-# -service [service that should be started]
-# -server [server that the service is running on, default=localhost]
-# -startuptype [startup mode that the service will be set to after it has been started, default=Automatic]
+# -Service [service that should be started]
+# -Server [server that the service is running on, default=localhost]
+# -Startuptype [startup mode that the service will be set to after it has been started, default=Automatic]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
+# 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StartServiceParallel
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$service,
-    [Parameter(Mandatory=$True)]
-    [String]$server = "localhost",
-    [String]$startuptype = "Automatic"
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Service,
+        [Parameter(Position=1, Mandatory=$True)][String]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=2)][ValidateSet('Automatic', 'AutomaticDelayedStart', 'Manual')][String]$Startuptype = "Automatic"
     )
 
-    $servicestatus = Get-Service -Name $service -ComputerName $server
-    if ($servicestatus.Status -eq "Running")
-    {
-        Write-host "The $service on $server is already Started"
+    $Servicestatus = Get-Service -Name $Service -ComputerName $Server
+    if ($Servicestatus.Status -eq "Running"){
+        Write-host "The $Service on $Server is already Started"
     }
-    Else {
-        Write-Host "Starting $service on $server and setting it to $startuptype"
-        Set-Service -Name $servicestatus.Name -ComputerName $server -StartupType $startuptype
-        Start-Job -ScriptBlock{start-service -inputobject $servicestatus}
+    Else{
+        Write-Host "Starting $Service on $Server and setting it to $Startuptype"
+        Set-Service -Name $Servicestatus.Name -ComputerName $Server -StartupType $Startuptype
+        Start-Job -ScriptBlock{start-service -inputobject $Servicestatus}
     }
 }
 
@@ -197,8 +191,8 @@ function StartServiceParallel
 # Description: Shows the status of a service on a specified Windows server
 #
 # Parameters:
-# -service [service to get the status of]
-# -server [server that the service is running on, default=localhost]
+# -Service [service to get the status of]
+# -Server [server that the service is running on, default=$env:COMPUTERNAME]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -208,27 +202,26 @@ function StartServiceParallel
 # 0.3		2018.03.22	rahd       	Added check for .status (Starting and Stoppping)
 # 0.4		2018.09.24	rahd       	Refactored $service parameter to accept multiple comma separated services in an array
 # 0.5		2018.09.24	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
+# 0.6		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function ShowServiceStatus
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String[]]$service,
-    [String[]]$server = "localhost"
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String[]]$Service,
+        [Parameter(Position=1)][String[]]$Server = "$env:COMPUTERNAME"
     )
-    foreach ($srv in $server){
-        foreach ($svc in $service){
-            Write-Host "$svc service on $srv is: " -nonewline
-            if($servicestatus = Get-Service -Name $svc -ComputerName $server -ErrorAction SilentlyContinue){
-                if(($servicestatus.Status -eq "Running") -or ($servicestatus.Status -eq "Started")){
+    foreach ($Srv in $Server){
+        foreach ($Svc in $Service){
+            Write-Host "$Svc service on $Srv is: " -nonewline
+            if($Servicestatus = Get-Service -Name $Svc -ComputerName $Server -ErrorAction SilentlyContinue){
+                if(($Servicestatus.Status -eq "Running") -or ($Servicestatus.Status -eq "Started")){
                     Write-Host -ForegroundColor Green "Started"
-                   }
-                elseif($servicestatus.Status -eq "Starting"){
+                }
+                elseif($Servicestatus.Status -eq "Starting"){
                     Write-Host -ForegroundColor Yellow "Starting"
                 }
-                elseif($servicestatus.Status -eq "Stopping"){
+                elseif($Servicestatus.Status -eq "Stopping"){
                     Write-Host -ForegroundColor Red "Stopping"
                 }
                 else{
@@ -248,34 +241,32 @@ function ShowServiceStatus
 # Description: Waits for a specified number of seconds
 #
 # Parameters:
-# -seconds [number of seconds to wait]
-# -countdown [seconds to decrement the counter]
+# -Seconds [number of seconds to wait]
+# -Countdown [seconds to decrement the counter, default=1]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
-# 0.2		2016.12.11	rahd       	Added Optional countdown parameter to visualize progress
+# 0.2		2017.12.11	rahd       	Added Optional countdown parameter to visualize progress
+# 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function Wait
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [int]$seconds = 0,
-    [Parameter(Mandatory=$false)]
-    [int]$Countdown = 1
+    param(
+        [Parameter(Position=0, Mandatory=$True)][int]$Seconds,
+        [Parameter(Position=1, Mandatory=$False)][int]$Countdown = 1
     )
 
-    $waittime = $seconds
-    Write-Host "Waiting for $waittime seconds"
+    $Waittime = $Seconds
+    Write-Host "Waiting for $Waittime seconds"
     do{
         Start-Sleep -s $Countdown
-        $seconds -= $Countdown
-        Write-Host "Waiting for $seconds more seconds"
+        $Seconds -= $Countdown
+        Write-Host "Waiting for $Seconds more seconds"
     }
-    Until (($seconds -eq "0") -or ($seconds -lt "0"))
+    Until (($Seconds -eq "0") -or ($Seconds -lt "0"))
 
 }
 
@@ -286,30 +277,28 @@ function Wait
 #              the powershell script then the prompt will default to Y and be skipped
 #
 # Parameters:
-# -message [message to print to screen before the Y/N]
+# -Message [message to print to screen before the (Y/N)]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function ConfirmContinue
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$message
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Message
     )
 
-    if(-Not $unattended)
-    {
-        $choice = ""
-        while ($choice -notmatch "[y|n]") {
-            $choice = read-host -prompt "$message (Y/N)"
+    if(-Not $Unattended){
+        $Choice = ""
+        while ($Choice -notmatch "[y|n]"){
+            $Choice = read-host -prompt "$Message (Y/N)"
         }
 
-        if ($choice -ne "y") {
+        if ($Choice -ne "y"){
             exit
         }
     }
@@ -327,23 +316,20 @@ function ConfirmContinue
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function CreateDir
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$Dirpath
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Dirpath
     )
 
-    $Dir_exist = test-path $Dirpath
-    if ($Dir_exist -ne $Dirpath)
-    {
+    $Direxist = test-path $Dirpath
+    if ($Direxist -ne $Dirpath){
         New-Item -path $Dirpath -itemtype "Directory"
     }
-    Else
-    {
+    Else{
         Write-host "Directory already exist $Dirpath"
     }
 }
@@ -363,32 +349,28 @@ function CreateDir
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 Function EditTxtFile
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$InFile,
-    [Parameter(Mandatory=$True)]
-    [String]$OutFile,
-    [Parameter(Mandatory=$True)]
-    [String]$OldReplace,
-    [Parameter(Mandatory=$True)]
-    [String]$NewReplace
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$InFile,
+        [Parameter(Position=1, Mandatory=$True)][String]$OutFile,
+        [Parameter(Position=2, Mandatory=$True)][String]$OldReplace,
+        [Parameter(Position=3, Mandatory=$True)][String]$NewReplace
     )
 
     $ImportFile = Get-Content -Path $InFile
     ForEach-Object{
         $ImportFile -replace $OldReplace, $NewReplace
-    } | Set-Content -Path $OutFile
+    }   | Set-Content -Path $OutFile
 }
 
 ########################################################################################################################
 #
 # Function: CheckFile
-# Description: searches a text file for a string
+# Description: Searches a text file for a string
 #
 # Parameters:
 # -TestFile [Specify the text file to be parsed]
@@ -398,16 +380,14 @@ Function EditTxtFile
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2016.12.11	rahd       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function CheckFile
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$TestFile,
-    [Parameter(Mandatory=$True)]
-    [String]$TestString
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$TestFile,
+        [Parameter(Position=1, Mandatory=$True)][String]$TestString
     )
     if (select-string -Path $TestFile -Pattern $TestString){
         Write-Host "String $TestString found in $TestFile"
@@ -453,9 +433,10 @@ function GetUptime
 # Description: Save the script output to the windows eventlog for Audit purpose
 #
 # Parameters:
-# -eventlog_source [specify the eventlog application source]
+# -EventlogSource [specify the eventlog application source]
 # -Message [specify the message added to the eventlog entry]
-# -Server [specify the server to create the log entry on Default=Localhost]
+# -Server [specify the server to create the log entry on Default=$env:COMPUTERNAME]
+# -EventID [specify the EventID number to create in Event log Default=11223]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -463,35 +444,38 @@ function GetUptime
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.18	rahd       	Added Parameter $Server for remote servers
 # 0.3		2018.01.11	rahd       	Added "-ErrorAction SilentlyContinue" to New-Eventlog line
+# 0.4		2018.12.18	rahd       	Added optional $EventID Parameter
+# 0.5		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function LogToEventlog
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [string]$EventlogSource,
-    [Parameter(Mandatory=$True)]
-    [string]$Message,
-    [string]$Server = "$env:COMPUTERNAME"
+    param(
+        [Parameter(Position=0, Mandatory=$True)][string]$EventlogSource,
+        [Parameter(Position=1, Mandatory=$True)][string]$Message,
+        [Parameter(Position=2)][string]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=3)][int]$EventID = 11223
     )
     
-    $Admin_username = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-    $logFileExists = Get-EventLog -LogName Application | Where-Object {$_.Source -eq $EventlogSource} 
+    # Generate $EventlogMessage
+    $AdminUsername = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    $LogFileExists = Get-EventLog -LogName Application | Where-Object {$_.Source -eq $EventlogSource} 
     $Newline = "`r`n"
-    $eventlogMessage = "$Admin_username$Newline$Message"
+    $EventlogMessage = "$AdminUsername$Newline$Message"
     
-    
-    if (! $logFileExists) {
+    # If $EventLogSource do not exist, create it
+    if (! $LogFileExists){
         New-EventLog -LogName Application -Source $EventlogSource -ComputerName $Server -ErrorAction SilentlyContinue
     }
-    Write-EventLog -LogName Application -Source $EventlogSource -EventId 11223 -EntryType Information -Message $EventlogMessage -ComputerName $Server
+
+    # Write $EventlogMessage to EventLog
+    Write-EventLog -LogName Application -Source $EventlogSource -EventId $EventID -EntryType Information -Message $EventlogMessage -ComputerName $Server
 }
 
 ########################################################################################################################
 # 
 # Function: LogToFile
-# Description: Save the script output to a logfiles for Audit purpose
+# Description: Save the script output to a logfile for Audit purposes
 #
 # Parameters:
 # -Logpath [path to logfile, will be generate if nothing exist]
@@ -502,29 +486,27 @@ function LogToEventlog
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Added Parameter Validation on $Logging
+# 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function LogToFile
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$Logpath,
-    [Parameter(Mandatory=$True)]
-    [String]$FName,
-    [Parameter(Mandatory=$True)]
-    [String]$logging
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Logpath,
+        [Parameter(Position=1, Mandatory=$True)][String]$FName,
+        [Parameter(Position=2, Mandatory=$True)][ValidateSet('Enable', 'Disable')][String]$Logging
     )
     
     $Date = Get-Date -UFormat "%Y%m%d"
-    $Dir_exist = test-path $Logpath
+    $Direxist = test-path $Logpath
     $LName = "$Logpath$FName-$Date.txt"
         
-    if ($Dir_exist -ne $Logpath){
+    if ($Direxist -ne $Logpath){
         New-Item -path $Logpath -itemtype "Directory"
     }
 
-    If ($logging -eq "Enable"){
+    If ($Logging -eq "Enable"){
         Start-Transcript -path $LName
     }
     else{
@@ -538,32 +520,31 @@ function LogToFile
 # Description: Stops a cluster Group
 #
 # Parameters:
-# -clusterGroup [cluster group to be stopped]
+# -Cluster [Cluster to access]
+# -ClusterGroup [Cluster group to be stopped]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopClusterGroup
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$cluster,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterGroup
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Cluster,
+        [Parameter(Position=1, Mandatory=$True)][String]$ClusterGroup
     )
     
-    if ((Get-Cluster -name $cluster | Get-ClusterGroup -name $clusterGroup).state -eq 'offline')
+    if ((Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup).state -eq 'offline')
     {
-        Write-host "The $clusterGroup on $cluster is already Offline" 
+        Write-host "The $ClusterGroup on $Cluster is already Offline" 
     }
     Else
     {
-        Write-host "Trying to stop $clusterGroup cluster resource $cluster"
-        Get-Cluster -name $cluster | Stop-ClusterGroup -name $clusterGroup
+        Write-host "Trying to stop $ClusterGroup cluster resource $Cluster"
+        Get-Cluster -name $Cluster | Stop-ClusterGroup -name $ClusterGroup
     }
 }
 
@@ -573,32 +554,31 @@ function StopClusterGroup
 # Description: Starts a cluster Group
 #
 # Parameters:
-# -clusterGroup [cluster group to be started]
+# -Cluster [Cluster to access]
+# -ClusterGroup [Cluster group to be started]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StartClusterGroup
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$cluster,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterGroup
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Cluster,
+        [Parameter(Position=1, Mandatory=$True)][String]$ClusterGroup
     )
     
-    if ((Get-Cluster -name $cluster | Get-ClusterGroup -name $clusterGroup).state -eq 'online')
+    if ((Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup).state -eq 'online')
     {
-        Write-host "The $clusterGroup on $cluster is already Online" 
+        Write-host "The $ClusterGroup on $Cluster is already Online" 
     }
     Else
     {
-        Write-host "Trying to start $clusterGroup cluster resource $cluster"
-        Get-Cluster -name $cluster | Start-ClusterGroup -name $clusterGroup
+        Write-host "Trying to start $ClusterGroup cluster resource $Cluster"
+        Get-Cluster -name $Cluster | Start-ClusterGroup -name $ClusterGroup
     }
 }
 
@@ -608,35 +588,33 @@ function StartClusterGroup
 # Description: Stops a cluster resource
 #
 # Parameters:
-# -clusterHost [cluster host alias]
-# -clusterResource [cluster resource to be stopped]
+# -Cluster [Cluster to access]
+# -ClusterGroup [Cluster Group alias]
+# -ClusterResource [Cluster resource to be stopped]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopClusterResource
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$cluster,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterGroup,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterResource
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Cluster,
+        [Parameter(Position=1, Mandatory=$True)][String]$ClusterGroup,
+        [Parameter(Position=2, Mandatory=$True)][String]$ClusterResource
     )
     
-    if ((Get-Cluster -name $cluster | Get-clusterGroup -name $clusterGroup | Get-ClusterResource -Name $clusterResource).state -eq 'offline')
+    if ((Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup | Get-ClusterResource -Name $ClusterResource).state -eq 'offline')
     {
-        Write-host "The $clusterResource in $clusterGroup on $cluster is already Offline" 
+        Write-host "The $ClusterResource in $ClusterGroup on $Cluster is already Offline" 
     }
     Else
     {
-        Write-host "Trying to stop $clusterResource in $clusterGroup on $cluster"
-        Get-Cluster -name $cluster | Get-ClusterGroup -name $clusterGroup | Stop-ClusterResource -name $clusterResource
+        Write-host "Trying to stop $ClusterResource in $ClusterGroup on $Cluster"
+        Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup | Stop-ClusterResource -name $ClusterResource
     }
 }
 
@@ -646,35 +624,33 @@ function StopClusterResource
 # Description: Starts a cluster resource
 #
 # Parameters:
-# -clusterHost [cluster host alias]
-# -clusterResource [cluster resource to be stopped]
+# -Cluster [Cluster to access]
+# -ClusterGroup [Cluster Group alias]
+# -ClusterResource [Cluster resource to be stopped]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StartClusterResource
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$cluster,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterGroup,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterResource
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Cluster,
+        [Parameter(Position=1, Mandatory=$True)][String]$ClusterGroup,
+        [Parameter(Position=2, Mandatory=$True)][String]$ClusterResource
     )
      
-    if ((Get-Cluster -name $cluster | Get-clusterGroup -name $clusterGroup | Get-ClusterResource -Name $clusterResource).state -eq 'online')
+    if ((Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup | Get-ClusterResource -Name $ClusterResource).state -eq 'online')
     {
-        Write-host "The $clusterResource in $clusterGroup on $cluster is already Online" 
+        Write-host "The $ClusterResource in $ClusterGroup on $Cluster is already Online" 
     }
     Else
     {
-        Write-host "Trying to start $clusterResource in $clusterGroup on $cluster"
-        Get-Cluster -name $cluster | Get-ClusterGroup -name $clusterGroup | Start-ClusterResource -name $clusterResource
+        Write-host "Trying to start $ClusterResource in $ClusterGroup on $Cluster"
+        Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup | Start-ClusterResource -name $ClusterResource
     }
 }
 
@@ -684,30 +660,29 @@ function StartClusterResource
 # Description: Check the cluster resources status
 #
 # Parameters:
-# -clusterhost [cluster resources status on the specified cluster]
+# -Cluster [Cluster to access]
+# -ClusterGroup [Cluster Group alias]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function ShowClusterStatus
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$cluster,
-    [Parameter(Mandatory=$True)]
-    [String]$clusterGroup
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$Cluster,
+        [Parameter(Position=1, Mandatory=$True)][String]$ClusterGroup
     )
     
-    $clusterResource = @(Get-Cluster -name $cluster | Get-ClusterGroup -name $clusterGroup | Get-ClusterResource)
+    $ClusterResource = @(Get-Cluster -name $Cluster | Get-ClusterGroup -name $ClusterGroup | Get-ClusterResource)
     
-    Foreach ($resource in $clusterResource)
+    Foreach ($Resource in $ClusterResource)
     {
-        Write-Host "$clusterGroup : $resource is: " -nonewline
-        if($clusterResource.state -eq 'Online') {
+        Write-Host "$ClusterGroup : $Resource is: " -nonewline
+        if($ClusterResource.state -eq 'Online') {
             Write-Host -f Green "Online"
         }
         else {
@@ -722,7 +697,7 @@ function ShowClusterStatus
 # Description: Test an url request
 #
 # Parameters:
-# -weburl [Specify the url to be tested]
+# -WebUrl [Specify the url to be tested]
 # -StatusCode [Specify the expected status code returned (Default=200)]
 #
 ########################################################################################################################
@@ -730,33 +705,29 @@ function ShowClusterStatus
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.22	rahd       	Added parameter $StatusCode
+# 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 # NOTE: 	    CheckUrl requires PowerShell 3.0
 ########################################################################################################################
 function CheckUrl
 {
-    param
-    (
-    [Parameter(Mandatory=$True)]
-    [String]$weburl,
-    [string]$StatusCode=200
+    param(
+        [Parameter(Position=0, Mandatory=$True)][String]$WebUrl,
+        [Parameter(Position=1)][string]$StatusCode=200
     )
 
-    ForEach ($url in $weburl){
-    Write-Host "Querying Service $url :" -NoNewline
-        if ((Invoke-WebRequest -uri $url).statuscode -eq $StatusCode)
-        {
+    ForEach ($Url in $WebUrl){
+    Write-Host "Querying Service $Url :" -NoNewline
+        if ((Invoke-WebRequest -uri $Url).statuscode -eq $StatusCode){
             Write-Host " URL OK - HTTP code: " -Foregroundcolor Green -NoNewline
-            (Invoke-WebRequest -uri $url).StatusCode
+            (Invoke-WebRequest -uri $Url).StatusCode
         }
-        Else
-        {
+        Else{
             Write-Host " URL ERROR - HTTP code: " -Foregroundcolor Red -NoNewline
-            (Invoke-WebRequest -uri $url).StatusCode
+            (Invoke-WebRequest -uri $Url).StatusCode
         }    
     }
-
 }
 
 ########################################################################################################################
@@ -765,23 +736,23 @@ function CheckUrl
 # Description: restart a specified windows server and wait for powershell to be available again on the host before proceeding
 #
 # Parameters:
-# -server [server to be restarted]
+# -Server [server to be restarted]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function RestartHost
 {
     param(
-    [Parameter(Mandatory=$True,Position=0)]
-    [String]$server
+        [Parameter(Mandatory=$True,Position=0)][String]$Server
     )
 
-    Restart-Computer -ComputerName $server -Force
-    Write-Host "Restarting host: $server"
+    Restart-Computer -ComputerName $Server -Force
+    Write-Host "Restarting host: $Server"
 }
 
 ########################################################################################################################
@@ -790,27 +761,27 @@ function RestartHost
 # Description: restart a specified windows server and wait for a specified time for powershell to be available again on the host before proceeding
 #
 # Parameters:
-# -server [server to be restarted]
-# -time [specify the timeout to wait until powershell is available again before continuing, default=0]
-# -delay [default=2]
+# -Server [Server to be restarted]
+# -Time [Specify the timeout to wait until powershell is available again before continuing, default=0]
+# -Delay [Specify how often Powershell Queries Powershell on the remote machine ,default=2]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function RestartHostDelay
 {
     param(
-    [Parameter(Mandatory=$True,Position=0)]
-    [String]$server,
-    [String]$time = 0,
-    [String]$delay = 2
+        [Parameter(Position=0, Mandatory=$True)][String]$Server,
+        [String]$Time = 0,
+        [String]$Delay = 2
     )
 
-    Restart-Computer -ComputerName $server -Wait -For PowerShell -Timeout $time -Delay $delay -Force
-    Write-Host "Restarting host: $server with timeout: $time"
+    Restart-Computer -ComputerName $Server -Wait -For PowerShell -Timeout $Time -Delay $Delay -Force
+    Write-Host "Restarting host: $Server with timeout: $Time"
 }
 
 ########################################################################################################################
@@ -819,63 +790,61 @@ function RestartHostDelay
 # Description: terminates a specified process on a server
 #
 # Parameters:
-# -server [server that the service is running on]
-# -processname [specify the process that will be stopped]
+# -Server [server that the service is running on]
+# -Processname [specify the process that will be stopped]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopProcessRemote
 {
     param(
-    [Parameter(Mandatory=$True)]
-    [String]$server,
-    [Parameter(Mandatory=$True)]
-    [String]$processname
+        [Parameter(Position=0, Mandatory=$True)][String]$Server,
+        [Parameter(Position=1, Mandatory=$True)][String]$Processname
     )
 
-    $process = get-process -ComputerName $server| where {$_.Name -eq $processname}
-    if ($process -ne $null){
-    
-        Write-host "The following process: $($process.Name) will be terminated"
-        invoke-command -ComputerName $server -ScriptBlock {get-process $process.Name |Stop-Process}
+    $Process = get-process -ComputerName $Server| where {$_.Name -eq $Processname}
+
+    if ($Process -ne $null){
+        Write-host "The following process: $($Process.Name) will be terminated"
+        invoke-command -ComputerName $Server -ScriptBlock {get-process $Process.Name |Stop-Process}
     }
     else{
-        Write-host "process is not found"
+        Write-host "Process is not found"
     }
 }
 
 ########################################################################################################################
 #
 # Function: StopProcessLocal
-# Description: terminates a specified process the localhost
+# Description: terminates a specified process on the localhost
 #
 # Parameters:
-# -processname [specify the process that will be stopped]
+# -Processname [specify the process that will be stopped]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopProcessLocal
 {
     param(
-    [Parameter(Mandatory=$True)]
-    [String]$processname
+        [Parameter(Position=0,Mandatory=$True)][String]$Processname
     )
 
-    $process = get-process | where {$_.Name -eq $processname}
-    if ($process -ne $null){
-    
-        Write-host "The following process: $($process.Name) will be terminated"
-        get-process $process.Name |Stop-Process
+    $Process = get-process | where {$_.Name -eq $Processname}
+    if ($Process -ne $null){
+        Write-host "The following process: $($Process.Name) will be terminated"
+        get-process $Process.Name |Stop-Process
     }
     else{
-        Write-host "process is not found"
+        Write-host "Process is not found"
     }
 }
