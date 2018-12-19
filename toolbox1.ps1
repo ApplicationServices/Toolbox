@@ -1,5 +1,5 @@
 ﻿########################################################################################################################
-# FILENAME:		toolbox1.0.ps1
+# FILENAME:		toolbox1.ps1
 # CREATED BY:	bbhj
 # CREATED:		2017.06.17
 # DESCRIPTION:  Application Services Powershell Function Collection Toolbox Release
@@ -19,13 +19,42 @@
 # 1.4		2018.04.04	rahd        Modified Function ShowServiceStatus to accepts CSV input
 # 1.4.1		2018.10.16	rahd        Anonymized Headers
 # 1.5		2018.12.18	rahd        Corrected Indenture, Versioning, Description and Capitalization acc. to Code review 
+# 2.0	    2018.12.18	rahd        Finalized and released Version 2.0 + Added Function List + Removed Function GetUpTime
 #
 ########################################################################################################################
 
-$currentversion = "1.5"
+$currentversion = "2.0"
 
-Write-host "Importing Function Library | Toolbox1.0.ps1 | " -ForegroundColor Yellow -NoNewline
+Write-host "Importing Function Library | Toolbox1.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
+
+########################################################################################################################
+#
+# Function List:
+#   StopService
+#   StopServiceParallel
+#   StartService
+#   StartServiceParallel
+#   ShowServiceStatus
+#   Wait
+#   ConfirmContinue
+#   CreateDir
+#   EditTxtFile
+#   CheckFile
+#   LogToEventlog
+#   LogToFile
+#   StopClusterGroup
+#   StartClusterGroup
+#   StopClusterResource
+#   StartClusterResource
+#   ShowClusterStatus
+#   CheckUrl
+#   RestartHost
+#   RestartHostDelay
+#   StopProcessRemote
+#   StopProcessLocal
+#
+########################################################################################################################
 
 ########################################################################################################################
 #
@@ -46,6 +75,7 @@ Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
 # 0.3		2018.03.27	rahd       	Added $force switch and if ($force) statement
 # 0.4		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
 # 0.5		2018.12.18	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopService
@@ -89,6 +119,7 @@ function StopService
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
 # 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopServiceParallel
@@ -127,6 +158,7 @@ function StopServiceParallel
 # 0.2		2017.12.06	rahd       	Modified "Set-Service -Name $service" to "Set-Service -Name $servicestatus.Name"
 # 0.3		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
 # 0.4		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StartService
@@ -164,6 +196,7 @@ function StartService
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Added Parameter Validation on $Startuptype
 # 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StartServiceParallel
@@ -203,6 +236,7 @@ function StartServiceParallel
 # 0.4		2018.09.24	rahd       	Refactored $service parameter to accept multiple comma separated services in an array
 # 0.5		2018.09.24	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
 # 0.6		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function ShowServiceStatus
@@ -250,6 +284,7 @@ function ShowServiceStatus
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.11	rahd       	Added Optional countdown parameter to visualize progress
 # 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function Wait
@@ -284,6 +319,7 @@ function Wait
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function ConfirmContinue
@@ -317,6 +353,7 @@ function ConfirmContinue
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function CreateDir
@@ -350,6 +387,7 @@ function CreateDir
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 Function EditTxtFile
@@ -381,6 +419,7 @@ Function EditTxtFile
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2016.12.11	rahd       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function CheckFile
@@ -395,36 +434,6 @@ function CheckFile
     Else{
         Write-Host "String $TestString NOT found in $TestFile" -ForegroundColor Red
     }
-}
-
-########################################################################################################################
-#
-# Function: GetUptime
-# Description: list each server and the current uptime since last booted
-#
-# Parameters:
-# -server [server to get uptime information]
-#
-########################################################################################################################
-# MODIFICATIONS
-# VERSION	DATE		INIT       	DESCRIPTION
-# 0.1		2017.06.17	bbhj       	Initial version created
-#
-########################################################################################################################
-function GetUptime
-{
-      Param
-      (
-      [Parameter(Mandatory=$True)]
-      [String]$server
-      )
-
-      if($command=Get-WmiObject win32_operatingsystem -ComputerName $Server){
-          $format = [datetime]::Now - $command.ConverttoDateTime($command.lastbootuptime)
-          Write-host $server "| uptime"$format.Days":"$format.Hours":"$format.Minutes" (Days:Hours:Minutes)"
-     }else{
-          Write-Error "Unable to retrieve WMI Object win32_operatingsystem from $Server"
-     } 
 }
 
 ########################################################################################################################
@@ -446,6 +455,7 @@ function GetUptime
 # 0.3		2018.01.11	rahd       	Added "-ErrorAction SilentlyContinue" to New-Eventlog line
 # 0.4		2018.12.18	rahd       	Added optional $EventID Parameter
 # 0.5		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function LogToEventlog
@@ -488,6 +498,7 @@ function LogToEventlog
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Added Parameter Validation on $Logging
 # 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function LogToFile
@@ -528,6 +539,7 @@ function LogToFile
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopClusterGroup
@@ -562,6 +574,7 @@ function StopClusterGroup
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StartClusterGroup
@@ -597,6 +610,7 @@ function StartClusterGroup
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopClusterResource
@@ -633,6 +647,7 @@ function StopClusterResource
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StartClusterResource
@@ -668,6 +683,7 @@ function StartClusterResource
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function ShowClusterStatus
@@ -706,6 +722,7 @@ function ShowClusterStatus
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2017.12.22	rahd       	Added parameter $StatusCode
 # 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 # NOTE: 	    CheckUrl requires PowerShell 3.0
@@ -743,6 +760,7 @@ function CheckUrl
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function RestartHost
@@ -770,6 +788,7 @@ function RestartHost
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function RestartHostDelay
@@ -798,6 +817,7 @@ function RestartHostDelay
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopProcessRemote
@@ -831,6 +851,7 @@ function StopProcessRemote
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopProcessLocal
