@@ -17,10 +17,11 @@
 # 0.8.1		2018.02.15	rahd        Added Greeting message
 # 0.9		2018.02.16	rahd        Added function CheckProcess
 # 0.10		2018.09.26	rahd        Modified function GetUpTime, TestSQLConnection
+# 0.11		2018.09.27	rahd        Added function TestORAConnection
 #
 ########################################################################################################################
 
-$currentversion = "0.10"
+$currentversion = "0.11"
 
 Write-host "Importing Function Library | Toolbox2.0.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
@@ -531,4 +532,69 @@ function CheckProcess
             $error.Clear()
         }
     }
+}
+
+########################################################################################################################
+#
+# Function: TestORAConnection
+# Description: Test Oracle Conenctivity, by opening a connection to a datasource
+#
+# Parameters:
+# -datasource [used for buildiong connection string]
+# -userID [used for buildiong connection string]
+# -passWD [used for buildiong connection string]
+#
+########################################################################################################################
+# MODIFICATIONS
+# VERSION	DATE		INIT       	DESCRIPTION
+# 0.1a		2018.09.27	rahd       	Initial version created
+#
+########################################################################################################################
+
+function TestORAConnection
+{
+    param
+    (
+    [String] $datasource,
+    [String] $userID,
+    [String] $passWD
+    )
+
+    $ErrorActionPreference = "SilentlyContinue"
+
+    add-type -Path D:\Oracle\product\12.1.0\client_1\ODP.NET\managed\common\Oracle.ManagedDataAccess.dll
+    #add-type -AssemblyName System.Data.OracleClient
+
+    $ORAconnection = "User Id=$userID; Password=$passWD; Data Source=$datasource"
+
+    Write-Host "Trying to open ORACLE Connection "
+    Write-Host "| $datasource |:   " -ForegroundColor Yellow -NoNewline
+
+    $ORAconn = New-Object Oracle.ManagedDataAccess.Client.OracleConnection($ORAconnection)
+    #$ORAconn = New-Object System.Data.OracleClient.OracleConnection($ORAconnection)
+    $ORAconn.Open()
+        
+    if ($ORAConn.State -eq 'Open')
+        {
+            Write-Host "Opened successfully" -ForegroundColor Green
+            Write-Host "Trying to close ORACLE Connection                               "
+            Write-Host "| $datasource |:   " -ForegroundColor Yellow -NoNewline
+            $ORAConn.Close();
+
+            if ($ORAConn.State -eq 'Closed')
+                {
+                Write-Host "Closed successfully" -ForegroundColor Green
+                }   
+            else
+                {
+                Write-Host "Connection NOT Closed!" -ForegroundColor Red
+                }
+		}
+    Else
+        {
+            Write-Host "ORACLE Connection is not opened" -ForegroundColor Red
+            Write-Host "$datasource | " -NoNewline
+            write-host $error -ForegroundColor Red
+            $error.Clear()
+        }    
 }
