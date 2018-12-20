@@ -2,7 +2,7 @@
 # FILENAME:		toolbox2.ps1
 # CREATED BY:	rahd
 # CREATED:		2018.01.22
-# DESCRIPTION:  Application Services Powershell Function Collection Toolbox 2.0 Release
+# DESCRIPTION:  Application Services Powershell Function Collection Toolbox 2 Release
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
@@ -20,13 +20,31 @@
 # 0.11		2018.09.27	rahd        Added function TestORAConnection
 # 0.11.1	2018.09.27	rahd        Anomynized Headers
 # 0.12	    2018.12.18	rahd        Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0 + Added Function List
 #
 ########################################################################################################################
 
-$currentversion = "0.12"
+$currentversion = "1.0"
 
-Write-host "Importing Function Library | Toolbox2.0.ps1 | " -ForegroundColor Yellow -NoNewline
+Write-host "Importing Function Library | Toolbox2.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
+
+########################################################################################################################
+#
+# Function List:
+#   CheckConnection
+#   TestPort
+#   TestShare
+#   GetUpTime
+#   CheckDiskSpace
+#   StartIISSite
+#   StopIISSite
+#   CheckIISSite
+#   TestSQLConnection
+#   CheckProcess
+#   TestORAConnection (0.1a)
+#
+########################################################################################################################
 
 ########################################################################################################################
 #
@@ -42,6 +60,7 @@ Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
 # 0.1		2018.01.11	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
 # 0.3		2018.12.14	rahd       	Corrected indenture and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function CheckConnection
@@ -77,6 +96,7 @@ function CheckConnection
 # 0.1		2018.01.22	rahd       	Initial version created
 # 0.2		2018.02.13	rahd       	Refactored $port parameter to accept multiple comma separated ports in an array
 # 0.3		2018.12.14	rahd       	Corrected indenture, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function TestPort
@@ -115,6 +135,7 @@ function TestPort
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.01.22	rahd       	Initial version created
 # 0.2		2018.12.14	rahd       	Corrected indenture, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function TestShare
@@ -156,6 +177,7 @@ function TestShare
 # 0.2		2018.01.23	rahd       	Modified generic 'Unable to retrieve WMI Object win32_operatingsystem from $Server' Error Message to 'Write-Warning "$error"'
 # 0.3		2018.09.26	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
 # 0.4		2018.12.14	rahd       	Corrected indenture, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function GetUptime
@@ -193,6 +215,7 @@ function GetUptime
 # 0.1		2018.01.25	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored internal If logic regarding $credential
 # 0.3		2018.12.14	rahd       	Corrected indenture, Description, Comments and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function CheckDiskSpace
@@ -274,7 +297,8 @@ function CheckDiskSpace
 # 0.1		2018.02.06	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored internal If logic
 # 0.3		2018.12.14	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
-#m
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
+#
 ########################################################################################################################
 function StartIISSite
 {
@@ -325,6 +349,7 @@ function StartIISSite
 # 0.1		2018.02.06	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored internal If logic
 # 0.3		2018.12.14	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function StopIISSite
@@ -379,6 +404,7 @@ function StopIISSite
 # 0.1		2018.02.06	rahd       	Initial version created
 # 0.2		2018.02.07	rahd       	Added webapps, apppools switches
 # 0.3		2018.12.14	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function CheckIISSite
@@ -436,6 +462,7 @@ function CheckIISSite
 # 0.1		2018.02.12	rahd       	Initial version created
 # 0.2		2018.09.26	rahd       	Total remake
 # 0.3		2018.12.17	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 
@@ -513,6 +540,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.02.16	rahd       	Initial version created
 # 0.2		2018.12.18	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
+# 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
 #
 ########################################################################################################################
 function CheckProcess
