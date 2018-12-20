@@ -1,5 +1,5 @@
 ﻿########################################################################################################################
-# FILENAME:		toolbox2.0.ps1
+# FILENAME:		toolbox2.ps1
 # CREATED BY:	Rasmus Ahrendt Deleuran (rahd)
 # CREATED:		2018.01.22
 # DESCRIPTION:  NNIT Application Services Powershell Function Collection Toolbox 2.0 Release
@@ -16,10 +16,11 @@
 # 0.8		2018.02.14	rahd       	Modified functions CheckConnection, CheckDiskSpace, StartIISSite, StopIISSite
 # 0.8.1		2018.02.15	rahd        Added Greeting message
 # 0.9		2018.02.16	rahd        Added function CheckProcess
+# 0.10		2018.09.26	rahd        Modified function GetUpTime, TestSQLConnection
 #
 ########################################################################################################################
 
-$currentversion = "0.9"
+$currentversion = "0.10"
 
 Write-host "Importing Function Library | Toolbox2.0.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
@@ -148,23 +149,26 @@ function TestShare
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.01.23	rahd       	Modified generic 'Unable to retrieve WMI Object win32_operatingsystem from $Server' Error Message to 'Write-Warning "$error"'
+# 0.3		2018.09.26	rahd       	Refactored $sever parameter to accept multiple comma separated servers in an array
 #
 ########################################################################################################################
 function GetUptime
 {
     Param(
     [Parameter(Mandatory=$True)]
-    [String]$server
+    [String[]]$server
     )
 
-    if($command = Get-WmiObject win32_operatingsystem -ComputerName $Server -ErrorAction SilentlyContinue){
-        $format = [datetime]::Now - $command.ConverttoDateTime($command.lastbootuptime)
-        Write-host $server "| uptime"$format.Days":"$format.Hours":"$format.Minutes" (Days:Hours:Minutes)"
-    }
-    else{
-        Write-Host "$server | " -NoNewline
-        Write-Warning "$error"
-        $error.Clear()
+    foreach ($srv in $server){
+        if($command = Get-WmiObject win32_operatingsystem -ComputerName $srv -ErrorAction SilentlyContinue){
+            $format = [datetime]::Now - $command.ConverttoDateTime($command.lastbootuptime)
+            Write-host $srv "| uptime"$format.Days":"$format.Hours":"$format.Minutes" (Days:Hours:Minutes)"
+        }
+        else{
+            Write-Host "$srv | " -NoNewline
+            Write-Warning "$error"
+            $error.Clear()
+        }
     } 
 }
 
@@ -418,17 +422,17 @@ function CheckIISSite
 # Description: 
 #
 # Parameters:
-# -Srcserver [server to test from (Default = $env:COMPUTERNAME)]
 # -SQLserver [SQL server to connect to]
 # -database [Database to connect to (Default = master)]
 # -userID [User credentials]
 # -passWD [User Password]
-# -integratedSec [switch to use integrated security instead of userID and passWD]
+# -NotintegratedSec [switch to not use integrated security]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.02.12	rahd       	Initial version created
+# 0.2		2018.09.26	rahd       	Total remake
 #
 ########################################################################################################################
 
@@ -436,19 +440,26 @@ function TestSQLConnection
 {
     param
     (
-    [String] $Srcserver = $env:COMPUTERNAME,
-    [String] $SQLserver,
+    [String[]] $SQLserver,
     [String] $database = "master",
     [String] $userID,
     [String] $passWD,
-    [Switch] $integratedSec
+    [Switch] $NotintegratedSec
     )
-    
-    # Suppress Error messages
-    $ErrorActionPreference = "SilentlyContinue"
-    
-    # Prompts for userID and passWD if empty
-    if (!($integratedSec)) {
+
+$ErrorActionPreference = "SilentlyContinue"
+
+ForEach ($SQLsrv in $SQLserver){
+    if (!($NotintegratedSec))
+        {
+        Write-Host "Trying to open SQL Connection, using Integrated Security     "
+        Write-Host "| ($SQLserver/$database) |:   " -ForegroundColor Yellow -NoNewline
+	
+        $SQLConnection = "Server = $SQLsrv; Database = $database; Integrated Security = True;"
+	    $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SqlConnection
+        }
+    else
+        {
         if (!($userID)) {
             Write-Warning "No User specified for connection"
             $userID = Read-Host -Prompt "Please type in userID"
@@ -456,39 +467,33 @@ function TestSQLConnection
         if (!($passWD)) {
             Write-Warning "No Password specified for user: $userID"
             $passWDSec = Read-Host -Prompt "Please type in Password for $userID" -AsSecureString
+            $passWD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passWDSec))
         }
-        $passWD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passWDSec))
-    }
 
-    # Build Connection string and $SQLConn object
-    if ($IntegratedSec){
-        $SQLConnStr = "Data Source=$SQLServer;Initial Catalog=$database;Integrated Security=true;Connect Timeout=3;"
-    }
-    else {
-        $SQLConnStr = "Data Source=$SQLServer;Initial Catalog=$database;User ID=$userID;Password=$passWD;Connect Timeout=3;"
-    }
-    $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SQLConnStr
+        Write-Host "Trying to open SQL Connection, not using Integrated Security "
+        Write-Host "| ($SQLserver/$database) |:   " -ForegroundColor Yellow -NoNewline
 
-    # Open Connection using $SQLConn object    
-    Write-Host "Trying to open SQL Connection  | ($SQLserver/$database) |: " -ForegroundColor Yellow -NoNewline
-    Invoke-Command -ComputerName $Srcserver -ScriptBlock {
-        $SQLConn = new-object ("Data.SqlClient.SqlConnection") $using:SQLConnStr
-        $SQLConn.Open()
+        $SQLConnection = "Server = $SQLsrv; Database = $database; uid = $UserID; pwd = $passWD;"
+	    $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SQLConnection
+        }
+        
+    $SQLConn.Open()
 
-        # Write output based on connection state
-        if ($SQLConn.State -eq 'Open')
+    if ($SQLConn.State -eq 'Open')
         {
             Write-Host "Opened successfully" -ForegroundColor Green
-            Write-Host "Trying to close SQL Connection | ($using:SQLserver/$using:database) |: " -ForegroundColor Yellow -NoNewline
+            Write-Host "Trying to close SQL Connection                               "
+            Write-Host "| ($SQLserver/$database) |:   " -ForegroundColor Yellow -NoNewline
             $SQLConn.Close();
             write-host "Closed successfully" -ForegroundColor Green
-        }
-        else {
+		}
+    Else
+        {
             Write-Host "SQL Connection is not opened" -ForegroundColor Red
-            Write-Host "$using:SQLserver | " -NoNewline
-            Write-Warning "$error"
+            Write-Host "$SQLserver | " -NoNewline
+            write-host $error -ForegroundColor Red
             $error.Clear()
-        }
+        }    
     }
 }
 
