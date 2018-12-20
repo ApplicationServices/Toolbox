@@ -19,10 +19,11 @@
 # 0.10		2018.09.26	rahd        Modified function GetUpTime, TestSQLConnection
 # 0.11		2018.09.27	rahd        Added function TestORAConnection
 # 0.11.1	2018.09.27	rahd        Anomynized Headers
+# 0.12	    2018.12.18	rahd        Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 
-$currentversion = "0.11.1"
+$currentversion = "0.12"
 
 Write-host "Importing Function Library | Toolbox2.0.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
@@ -33,25 +34,26 @@ Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
 # Description: Test basic (ping) connectivity to specified server(s)
 #
 # Parameters:
-# -server [server(s) to be tested]
+# -Server [server(s) to be tested]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.01.11	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
+# 0.3		2018.12.14	rahd       	Corrected indenture and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function CheckConnection
 {
     param(
-    [Parameter(Position=0, Mandatory=$True)]
-    [String[]]$server
+        [Parameter(Position=0, Mandatory=$True)]
+        [String[]]$Server
     )
     
     $ErrorActionPreference = "SilentlyContinue"
     
-    foreach ($_ in $server){
+    foreach ($_ in $Server){
         Test-Connection -ComputerName $_ -Count 1
         if ($Error[0].Exception){
             $Error[0].Exception
@@ -63,36 +65,36 @@ function CheckConnection
 ########################################################################################################################
 #
 # Function: TestPort
-# Description: Test connection to a port on a server
+# Description: Test connection to one or more ports on a server
 #
 # Parameters:
-# -server [server to test port on]
-# -port [Port to be tested]
+# -Server [server to test port on]
+# -Port [Port(s) to be tested][Input as comma separated numbers]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.01.22	rahd       	Initial version created
 # 0.2		2018.02.13	rahd       	Refactored $port parameter to accept multiple comma separated ports in an array
+# 0.3		2018.12.14	rahd       	Corrected indenture, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function TestPort
 {
-    param
-    (
-    [Parameter(Mandatory=$True)][String]$server,
-    [String[]]$port
+    param(
+        [Parameter(Mandatory=$True)][String]$Server,
+        [String[]]$Port
     )
 
     $ErrorActionPreference = "SilentlyContinue"
 
-    foreach ($_ in $port) {
-        $connection = New-Object System.Net.Sockets.TcpClient($server, $_)
-        write-host "Testing connection to $server on port $_ : " -NoNewline
+    foreach ($_ in $Port){
+        $Connection = New-Object System.Net.Sockets.TcpClient($Server, $_)
+        write-host "Testing connection to $Server on port $_ : " -NoNewline
         
-        if ($connection.Connected) {
+        if ($Connection.Connected){
             Write-Host "Success" -ForegroundColor Green
-            $connection.Close()
+            $Connection.Close()
         }
         elseif ($Error[0].Exception){
             Write-Host "Failed " -ForegroundColor Red
@@ -106,23 +108,24 @@ function TestPort
 # Description: Test connection to a Share on a server
 #
 # Parameters:
-# -share [Share to be tested]
+# -Share [Share to be tested][Input as "\\Servername\Sharename"]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.01.22	rahd       	Initial version created
+# 0.2		2018.12.14	rahd       	Corrected indenture, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function TestShare
 {
-    param
-    (
-    [Parameter(Mandatory=$True)][String]$share
+    param(
+        [Parameter(Mandatory=$True)][String]$Share
     )
 
-    Write-Host "Checking Share availability of share: $share" -ForegroundColor Yellow
+    Write-Host "Checking Share availability of share: $Share" -ForegroundColor Yellow
     Write-Host "Share $Share is: " -NoNewline
+
     if(Test-Path -Path "$Share" -ErrorAction SilentlyContinue){
         Write-Host "Available" -ForegroundColor Green
     }
@@ -131,7 +134,7 @@ function TestShare
             Write-Host "$Error" -ForegroundColor Yellow
         }  
         else{
-            Write-Host "UnAvailable" -ForegroundColor Red -NoNewline
+            Write-Host "Unavailable" -ForegroundColor Red -NoNewline
             Write-Host " $Error" -ForegroundColor Yellow
         }
     }
@@ -144,32 +147,33 @@ function TestShare
 # Description: list each server and the current uptime since last booted
 #
 # Parameters:
-# -server [server to get uptime information]
+# -Server [server(s) to get uptime information from][Input as comma separated Servernames]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2017.06.17	bbhj       	Initial version created
 # 0.2		2018.01.23	rahd       	Modified generic 'Unable to retrieve WMI Object win32_operatingsystem from $Server' Error Message to 'Write-Warning "$error"'
-# 0.3		2018.09.26	rahd       	Refactored $sever parameter to accept multiple comma separated servers in an array
+# 0.3		2018.09.26	rahd       	Refactored $server parameter to accept multiple comma separated servers in an array
+# 0.4		2018.12.14	rahd       	Corrected indenture, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function GetUptime
 {
     Param(
-    [Parameter(Mandatory=$True)]
-    [String[]]$server
+        [Parameter(Mandatory=$True)]
+        [String[]]$Server
     )
 
-    foreach ($srv in $server){
-        if($command = Get-WmiObject win32_operatingsystem -ComputerName $srv -ErrorAction SilentlyContinue){
-            $format = [datetime]::Now - $command.ConverttoDateTime($command.lastbootuptime)
-            Write-host $srv "| uptime"$format.Days":"$format.Hours":"$format.Minutes" (Days:Hours:Minutes)"
+    foreach ($Srv in $Server){
+        if($Command = Get-WmiObject win32_operatingsystem -ComputerName $Srv -ErrorAction SilentlyContinue){
+            $Format = [datetime]::Now - $Command.ConverttoDateTime($Command.lastbootuptime)
+            Write-host $srv "| uptime"$Format.Days":"$Format.Hours":"$Format.Minutes" (Days:Hours:Minutes)"
         }
         else{
-            Write-Host "$srv | " -NoNewline
-            Write-Warning "$error"
-            $error.Clear()
+            Write-Host "$Srv | " -NoNewline
+            Write-Warning "$Error"
+            $Error.Clear()
         }
     } 
 }
@@ -180,7 +184,7 @@ function GetUptime
 # Description: Checks Local and Network drives for Free and used disk space
 #
 # Parameters:
-# -server [server to test (Default = $env:COMPUTERNAME)]
+# -Server [server to test (Default = $env:COMPUTERNAME)]
 # -Credential [Credentials to use for server connection]
 #
 ########################################################################################################################
@@ -188,63 +192,65 @@ function GetUptime
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.01.25	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored internal If logic regarding $credential
+# 0.3		2018.12.14	rahd       	Corrected indenture, Description, Comments and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function CheckDiskSpace
 {
-    param
-    (
-    [Parameter(Position=0)]
-    [String]$server = "$env:COMPUTERNAME",
-    [Parameter(Position=1, Mandatory=$false)]
-    [System.Management.Automation.Credential()]$Credential
+    param(
+        [Parameter(Position=0)][String]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=1)][System.Management.Automation.Credential()]$Credential
     )
 
     BEGIN{
+        # Define function to format Size Output
         function FormatGetFreeDisk 
         {
-            param ($size)
-            switch ($size) 
+            param ($Size)
+            switch ($Size) 
             {
-                {$_ -ge 1PB}{"{0:#.#' PB'}" -f ($size / 1PB); break}
-                {$_ -ge 1TB}{"{0:#.#' TB'}" -f ($size / 1TB); break}
-                {$_ -ge 1GB}{"{0:#.#' GB'}" -f ($size / 1GB); break}
-                {$_ -ge 1MB}{"{0:#.# 'MB'}" -f ($size / 1MB); break}
-                {$_ -ge 1KB}{"{0:#' KB'}" -f ($size / 1KB); break}
-                default {"{0}" -f ($size) + " B"}
+                {$_ -ge 1PB}{"{0:#.#' PB'}" -f ($Size / 1PB); break}
+                {$_ -ge 1TB}{"{0:#.#' TB'}" -f ($Size / 1TB); break}
+                {$_ -ge 1GB}{"{0:#.#' GB'}" -f ($Size / 1GB); break}
+                {$_ -ge 1MB}{"{0:#.# 'MB'}" -f ($Size / 1MB); break}
+                {$_ -ge 1KB}{"{0:#' KB'}" -f ($Size / 1KB); break}
+                default {"{0}" -f ($Size) + " B"}
             }
         }
 
-        $wmiquery = 'SELECT * FROM Win32_LogicalDisk WHERE Size != Null AND DriveType = 3 OR DriveType = 4'
+        # Define WMI Query to include DriveType 3 (Local Disk) and DriveType 4 (Network Drive)
+        $WMIQuery = 'SELECT * FROM Win32_LogicalDisk WHERE Size != Null AND DriveType = 3 OR DriveType = 4'
 
     }
     PROCESS{
-            if ($server -eq $env:COMPUTERNAME){
-                $disks = Get-WmiObject -Query $wmiquery -ComputerName $server -ErrorAction SilentlyContinue
+            if ($Server -eq $env:COMPUTERNAME){
+                $Disks = Get-WmiObject -Query $WMIQuery -ComputerName $Server -ErrorAction SilentlyContinue
                 if ($Error) {
-                    Write-Host "$server | " -NoNewline
-                    Write-Warning "$error"
-                    $error.Clear()
+                    Write-Host "$Server | " -NoNewline
+                    Write-Warning "$Error"
+                    $Error.Clear()
                 }
             }
             else
             {
                 if (!($Credential)) {
-                    $disks = Get-WmiObject -Query $wmiquery -ComputerName $server -ErrorAction SilentlyContinue
+                    $Disks = Get-WmiObject -Query $WMIQuery -ComputerName $Server -ErrorAction SilentlyContinue
                 }
                 else {
-                    $disks = Get-WmiObject -Query $wmiquery -ComputerName $server -Credential $Credential -ErrorAction SilentlyContinue
+                    $Disks = Get-WmiObject -Query $WMIQuery -ComputerName $Server -Credential $Credential -ErrorAction SilentlyContinue
                 }
                 if ($Error) {
-                    Write-Host "$server | " -NoNewline
-                    Write-Warning "$error"
-                    $error.Clear()
+                    Write-Host "$Server | " -NoNewline
+                    Write-Warning "$Error"
+                    $Error.Clear()
                 }
             }
-            $diskarray = @()
-            $disks | ForEach-Object { $diskarray += $_ }
+            # Populate $Diskarray array
+            $Diskarray = @()
+            $Disks | ForEach-Object { $Diskarray += $_ }
                     
-            $diskarray | Select-Object @{n='Server Name';e={$_.SystemName}},
+            # Outputs diskarray using FormatGetFreeDisk function
+            $Diskarray | Select-Object @{n='Server Name';e={$_.SystemName}},
                 @{n='Disk Letter';e={$_.DeviceID}},
                 @{n='Volume Size';e={FormatGetFreeDisk $_.Size}},
                 @{n='Available';e={FormatGetFreeDisk $_.FreeSpace}},
@@ -256,50 +262,48 @@ function CheckDiskSpace
 ########################################################################################################################
 #
 # Function: StartIISSite
-# Description: 
+# Description: Start IIS Site on soecified server
 #
 # Parameters:
-# -server [server to start IIS Sites on]
-# -website [Wildcard parameter for website to be started (Type * for all websites)]
+# -Server [server to start IIS Sites on (Default = $env:COMPUTERNAME)]
+# -Website [Wildcard parameter for website to be started (Type * for all websites)]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
-# 0.1a		2018.02.06	rahd       	Initial version created
+# 0.1		2018.02.06	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored internal If logic
-#
+# 0.3		2018.12.14	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
+#m
 ########################################################################################################################
 function StartIISSite
 {
-    param
-    (
-    [Parameter(Position=0)]
-    [String]$server = "$env:COMPUTERNAME",
-    [Parameter(Position=1, Mandatory=$true)]
-    [String]$website
+    param(
+        [Parameter(Position=0)][String]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=1, Mandatory=$True)][String]$Website
     )
 
-    Invoke-Command -ComputerName $server -ScriptBlock {
+    Invoke-Command -ComputerName $Server -ScriptBlock{
         Import-Module -Name webadministration
 
-        $site = (Get-Website | where {$_.name -like "*$using:website*"})
-        $site | select Name, State, serverautostart, applicationpool, physicalpath| Format-Table -AutoSize
-        if (!($site)) {
-            Write-Host "No IIS Sites matching $using:website" -ForegroundColor DarkGray
+        $Site = (Get-Website | where {$_.name -like "*$using:Website*"})
+        $Site | select Name, State, serverautostart, applicationpool, physicalpath| Format-Table -AutoSize
+        if (!($Site)){
+            Write-Host "No IIS Sites matching $using:Website" -ForegroundColor DarkGray
         }
 
-        $site | select Name, State, ServerAutostart | format-table -AutoSize
-        foreach ($site in $site) {
-            $iissite = "IIS:\Sites\" + $site.name
-            if ($site.state -eq "Started"){
+        $Site | select Name, State, ServerAutostart | format-table -AutoSize
+        foreach ($Site in $Site){
+            $IISSite = "IIS:\Sites\" + $Site.name
+            if ($Site.state -eq "Started"){
                 Write-Host "Site is already started: " -ForegroundColor DarkGreen -NoNewline
-                $site.name
+                $Site.name
             }
-            elseif ($site.state -eq "Stopped"){
+            elseif ($Site.state -eq "Stopped"){
                 Write-Host "Starting site: " -ForegroundColor Yellow -NoNewline
-                $site.name
-                $site.Start()
-                Set-ItemProperty -Path $iissite serverAutoStart True
+                $Site.name
+                $Site.Start()
+                Set-ItemProperty -Path $IISSite serverAutoStart True
                 write-host "Setting Start Automatically to True"
             }
         }
@@ -309,51 +313,49 @@ function StartIISSite
 ########################################################################################################################
 #
 # Function: StopIISSite
-# Description: 
+# Description: Stop IIS Site on soecified server
 #
 # Parameters:
-# -server [server to stop IIS Sites on]
-# -website [Wildcard parameter for website to be stopped (Type * for all websites)]
+# -Server [server to stop IIS Sites on (Default = $env:COMPUTERNAME)]
+# -Website [Wildcard parameter for website to be stopped (Type * for all websites)]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
-# 0.1a		2018.02.06	rahd       	Initial version created
+# 0.1		2018.02.06	rahd       	Initial version created
 # 0.2		2018.02.14	rahd       	Refactored internal If logic
+# 0.3		2018.12.14	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function StopIISSite
 {
-    param
-    (
-    [Parameter(Position=0)]
-    [String]$server = "$env:COMPUTERNAME",
-    [Parameter(Position=1, Mandatory=$true)]
-    [String]$website
+    param(
+        [Parameter(Position=0)][String]$server = "$env:COMPUTERNAME",
+        [Parameter(Position=1, Mandatory=$true)][String]$Website
     )
 
-    Invoke-Command -ComputerName $server -ScriptBlock {
+    Invoke-Command -ComputerName $server -ScriptBlock{
         Import-Module -Name webadministration
 
-        $site = (Get-Website | where {$_.name -like "*$using:website*"})
-        $site | select Name, State, serverautostart, applicationpool, physicalpath| Format-Table -AutoSize
-        if (!($site)) {
-            Write-Host "No IIS Sites matching $using:website" -ForegroundColor DarkGray
+        $Site = (Get-Website | where {$_.name -like "*$using:Website*"})
+        $Site | select Name, State, serverautostart, applicationpool, physicalpath| Format-Table -AutoSize
+        if (!($Site)) {
+            Write-Host "No IIS Sites matching $using:Website" -ForegroundColor DarkGray
         }
 
-        $site | select Name, State, ServerAutostart | format-table -AutoSize
-        foreach ($site in $site) {
-            $iissite = "IIS:\Sites\" + $site.name
-            if ($site.state -eq "Stopped"){
+        $Site | select Name, State, ServerAutostart | format-table -AutoSize
+        foreach ($Site in $Site){
+            $IISSite = "IIS:\Sites\" + $Site.name
+            if ($Site.state -eq "Stopped"){
                 Write-Host "Site is already stopped: " -ForegroundColor DarkGreen -NoNewline
-                $site.name
+                $Site.name
             }
-            elseif ($site.state -eq "Started"){
+            elseif ($Site.state -eq "Started"){
                 Write-Host "Stopping site: " -ForegroundColor Yellow -NoNewline
-                $site.name
-                $site.Stop()
+                $Site.name
+                $Site.Stop()
                 write-host "Setting Start Automatically to False"
-                Set-ItemProperty -Path $iissite serverAutoStart False
+                Set-ItemProperty -Path $IISSite serverAutoStart False
                 
             }
         }
@@ -363,56 +365,54 @@ function StopIISSite
 ########################################################################################################################
 #
 # Function: CheckIISSite
-# Description: 
+# Description: Resturns status properties of IIS Site on server
 #
 # Parameters:
-# -server   [server to check IIS Sites on]
-# -website  [Wildcard parameter for website(s) to be checked (Type * for all websites)]
-# -webapps  [Switch parameter, set to true to show status for Web Applications]
-# -apppools [Switch parameter, set to true to show status for Application Pools]
+# -Server   [server to check IIS Sites on (Default = $env:COMPUTERNAME)]
+# -Website  [Wildcard parameter for website(s) to be checked (Type * for all websites)]
+# -WebApps  [Switch parameter, set, to show status for Web Applications]
+# -AppPools [Switch parameter, set, to show status for Application Pools]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
-# 0.1a		2018.02.06	rahd       	Initial version created
+# 0.1		2018.02.06	rahd       	Initial version created
 # 0.2		2018.02.07	rahd       	Added webapps, apppools switches
+# 0.3		2018.12.14	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function CheckIISSite
 {
-    param
-    (
-    [Parameter(Position=0)]
-    [String]$server = "$env:COMPUTERNAME",
-    [Parameter(Position=1, Mandatory=$true)]
-    [String]$website,
-    [switch]$webapps,
-    [switch]$apppools
+    param(
+        [Parameter(Position=0)][String]$Server = "$env:COMPUTERNAME",
+        [Parameter(Position=1, Mandatory=$true)][String]$Website,
+        [switch]$WebApps,
+        [switch]$AppPools
     )
 
-    Invoke-Command -ComputerName $server -ScriptBlock {
+    Invoke-Command -ComputerName $Server -ScriptBlock{
         Import-Module -Name webadministration
 
-        Write-Host "Listing Websites matching $using:website on $using:server" -ForegroundColor Yellow        
-        $site = (Get-Website | where {$_.name -like "*$using:website*"})
-        $site | select Name, State, serverautostart, applicationpool, physicalpath| Format-Table -AutoSize
-        if (!($site)) {
-            Write-Host "No IIS Sites matching $using:website" -ForegroundColor DarkGray
+        Write-Host "Listing Websites matching $using:Website on $using:Server" -ForegroundColor Yellow        
+        $Site = (Get-Website | where {$_.name -like "*$using:Website*"})
+        $Site | select Name, State, serverautostart, applicationpool, physicalpath| Format-Table -AutoSize
+        if (!($Site)) {
+            Write-Host "No IIS Sites matching $using:Website" -ForegroundColor DarkGray
         }
-        if ($using:webapps) {
-            Write-Host "Listing Web Applications matching $using:website on $using:server" -ForegroundColor Yellow
-            $webapp = (Get-WebApplication | where {$_.name -like "*$using:website*" -or $_.ApplicationPool -like"*$using:website*"})
-            $webapp | select path, ApplicationPool, PhysicalPath | Format-Table -AutoSize
-            if (!($webapp)) {
-                Write-Host "No Web Applications matching $using:website"  -ForegroundColor DarkGray
+        if ($using:WebApps){
+            Write-Host "Listing Web Applications matching $using:Website on $using:Server" -ForegroundColor Yellow
+            $WebApp = (Get-WebApplication | where {$_.name -like "*$using:Website*" -or $_.ApplicationPool -like"*$using:Website*"})
+            $WebApp | select path, ApplicationPool, PhysicalPath | Format-Table -AutoSize
+            if (!($WebApp)){
+                Write-Host "No Web Applications matching $using:Website"  -ForegroundColor DarkGray
             }
         }
-        if ($using:apppools) {
-            Write-Host "Listing Application Pools matching $using:website on $using:server" -ForegroundColor Yellow
-            $apppool = (Get-Item IIS:\AppPools\*$using:website*)
-            $apppool | select Name, State, autostart, enable32BitAppOnWin64 | Format-Table -AutoSize
-            if (!($apppool)) {
-                Write-Host "No Application Pool matching $using:website"  -ForegroundColor DarkGray
+        if ($using:AppPools){
+            Write-Host "Listing Application Pools matching $using:Website on $using:Server" -ForegroundColor Yellow
+            $AppPool = (Get-Item IIS:\AppPools\*$using:Website*)
+            $AppPool | select Name, State, autostart, enable32BitAppOnWin64 | Format-Table -AutoSize
+            if (!($AppPool)){
+                Write-Host "No Application Pool matching $using:Website"  -ForegroundColor DarkGray
             }
         }
     }
@@ -421,80 +421,80 @@ function CheckIISSite
 ########################################################################################################################
 #
 # Function: TestSQLConnection
-# Description: 
+# Description: Opens up a connection to a SQL Instance, using either Integrated or SQL Authentication
 #
 # Parameters:
 # -SQLserver [SQL server to connect to]
-# -database [Database to connect to (Default = master)]
-# -userID [User credentials]
-# -passWD [User Password]
-# -NotintegratedSec [switch to not use integrated security]
+# -Database [Database to connect to (Default = master)]
+# -UserID [User credentials]
+# -PassWD [User Password]
+# -NotIntegratedSec [switch to not use integrated security]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
 # 0.1		2018.02.12	rahd       	Initial version created
 # 0.2		2018.09.26	rahd       	Total remake
+# 0.3		2018.12.17	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 
 function TestSQLConnection
 {
-    param
-    (
-    [String[]] $SQLserver,
-    [String] $database = "master",
-    [String] $userID,
-    [String] $passWD,
-    [Switch] $NotintegratedSec
+    param(
+        [Parameter(Position=0,Mandatory=$true)][String[]] $SQLserver,
+        [Parameter(Position=1)][String] $Database = "master",
+        [String] $UserID,
+        [String] $PassWD,
+        [Switch] $NotIntegratedSec
     )
 
 $ErrorActionPreference = "SilentlyContinue"
 
-ForEach ($SQLsrv in $SQLserver){
-    if (!($NotintegratedSec))
-        {
-        Write-Host "Trying to open SQL Connection, using Integrated Security     "
-        Write-Host "| ($SQLserver/$database) |:   " -ForegroundColor Yellow -NoNewline
+    ForEach ($SQLsrv in $SQLserver){
+        # Defines Connection String using Integrated Security
+        if (!($NotintegratedSec)){
+            Write-Host "Trying to open SQL Connection, using Integrated Security     "
+            Write-Host "| ($SQLserver/$Database) |:   " -ForegroundColor Yellow -NoNewline
 	
-        $SQLConnection = "Server = $SQLsrv; Database = $database; Integrated Security = True;"
-	    $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SqlConnection
+            $SQLConnection = "Server = $SQLsrv; Database = $Database; Integrated Security = True;"
+	        $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SqlConnection
         }
-    else
-        {
-        if (!($userID)) {
-            Write-Warning "No User specified for connection"
-            $userID = Read-Host -Prompt "Please type in userID"
-        }        
-        if (!($passWD)) {
-            Write-Warning "No Password specified for user: $userID"
-            $passWDSec = Read-Host -Prompt "Please type in Password for $userID" -AsSecureString
-            $passWD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passWDSec))
+        # Defines Connection String using SQL Security
+        else{
+            if (!($userID)){
+                Write-Warning "No User specified for connection"
+                $UserID = Read-Host -Prompt "Please type in userID"
+            }        
+            if (!($passWD)){
+                Write-Warning "No Password specified for user: $UserID"
+                $PassWDSec = Read-Host -Prompt "Please type in Password for $UserID" -AsSecureString
+                $PassWD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($PassWDSec))
+            }
+
+            Write-Host "Trying to open SQL Connection, not using Integrated Security "
+            Write-Host "| ($SQLserver/$Database) |:   " -ForegroundColor Yellow -NoNewline
+
+            $SQLConnection = "Server = $SQLsrv; Database = $Database; uid = $UserID; pwd = $PassWD;"
+	        $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SQLConnection
         }
+    
+        # Opens Connection    
+        $SQLConn.Open()
 
-        Write-Host "Trying to open SQL Connection, not using Integrated Security "
-        Write-Host "| ($SQLserver/$database) |:   " -ForegroundColor Yellow -NoNewline
-
-        $SQLConnection = "Server = $SQLsrv; Database = $database; uid = $UserID; pwd = $passWD;"
-	    $SQLConn = new-object ("Data.SqlClient.SqlConnection") $SQLConnection
-        }
-        
-    $SQLConn.Open()
-
-    if ($SQLConn.State -eq 'Open')
-        {
+        # Closes connection
+        if ($SQLConn.State -eq 'Open'){
             Write-Host "Opened successfully" -ForegroundColor Green
             Write-Host "Trying to close SQL Connection                               "
-            Write-Host "| ($SQLserver/$database) |:   " -ForegroundColor Yellow -NoNewline
+            Write-Host "| ($SQLserver/$Database) |:   " -ForegroundColor Yellow -NoNewline
             $SQLConn.Close();
             write-host "Closed successfully" -ForegroundColor Green
-		}
-    Else
-        {
+	    }
+        Else{
             Write-Host "SQL Connection is not opened" -ForegroundColor Red
             Write-Host "$SQLserver | " -NoNewline
-            write-host $error -ForegroundColor Red
-            $error.Clear()
+            write-host $Error -ForegroundColor Red
+            $Error.Clear()
         }    
     }
 }
@@ -502,35 +502,34 @@ ForEach ($SQLsrv in $SQLserver){
 ########################################################################################################################
 #
 # Function: CheckProcess
-# Description: Checks if process is running on server(s)
+# Description: Checks if process is running on server
 #
 # Parameters:
-# -server [server to be tested]
-# -processname [Process(s) to be checked(Comma seperate for multiple processes)]
+# -Server [server to be tested]
+# -Processname [Process(s) to be checked(Comma seperate for multiple processes)]
 #
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
-# 0.1a		2018.02.16	rahd       	Initial version created
+# 0.1		2018.02.16	rahd       	Initial version created
+# 0.2		2018.12.18	rahd       	Corrected indenture, Versioning, Description and Capitalization acc. to Code review
 #
 ########################################################################################################################
 function CheckProcess
 {
     param(
-    [Parameter(Position=0)]
-    [String]$server = $env:COMPUTERNAME,
-    [Parameter(Position=1, Mandatory=$True)]
-    [String[]]$processname
+        [Parameter(Position=0)][String]$Server = $env:COMPUTERNAME,
+        [Parameter(Position=1, Mandatory=$True)][String[]]$Processname
     )
 
     $ErrorActionPreference = "SilentlyContinue"
 
-    foreach ($_ in $processname) {
-        $process = get-process -ComputerName $server -Name $_
-        $process | Format-Table
-        if (!($process)) {
-            Write-Warning "$error"
-            $error.Clear()
+    foreach ($_ in $Processname){
+        $Process = get-process -ComputerName $Server -Name $_
+        $Process | Format-Table
+        if (!($Process)) {
+            Write-Warning "$Error"
+            $Error.Clear()
         }
     }
 }
