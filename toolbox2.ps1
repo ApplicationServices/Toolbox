@@ -1,8 +1,8 @@
 ﻿########################################################################################################################
 # FILENAME:		toolbox2.ps1
-# CREATED BY:	Rasmus Ahrendt Deleuran (rahd)
+# CREATED BY:	rahd
 # CREATED:		2018.01.22
-# DESCRIPTION:  NNIT Application Services Powershell Function Collection Toolbox 2.0 Release
+# DESCRIPTION:  Application Services Powershell Function Collection Toolbox 2.0 Release
 ########################################################################################################################
 # MODIFICATIONS
 # VERSION	DATE		INIT       	DESCRIPTION
@@ -18,10 +18,11 @@
 # 0.9		2018.02.16	rahd        Added function CheckProcess
 # 0.10		2018.09.26	rahd        Modified function GetUpTime, TestSQLConnection
 # 0.11		2018.09.27	rahd        Added function TestORAConnection
+# 0.11.1	2018.09.27	rahd        Anomynized Headers
 #
 ########################################################################################################################
 
-$currentversion = "0.11"
+$currentversion = "0.11.1"
 
 Write-host "Importing Function Library | Toolbox2.0.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
