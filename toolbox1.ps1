@@ -20,10 +20,11 @@
 # 1.4.1		2018.10.16	rahd        Anonymized Headers
 # 1.5		2018.12.18	rahd        Corrected Indenture, Versioning, Description and Capitalization acc. to Code review 
 # 2.0	    2018.12.18	rahd        Finalized and released Version 2.0 + Added Function List + Removed Function GetUpTime
+# 2.1	    2019.01.14	rahd        Modified Function CheckUrl
 #
 ########################################################################################################################
 
-$currentversion = "2.0"
+$currentversion = "2.1"
 
 Write-host "Importing Function Library | Toolbox1.ps1 | " -ForegroundColor Yellow -NoNewline
 Write-Host "Current Version: $currentversion" -ForegroundColor Yellow
@@ -715,6 +716,7 @@ function ShowClusterStatus
 # Parameters:
 # -WebUrl [Specify the url to be tested]
 # -StatusCode [Specify the expected status code returned (Default=200)]
+# -UseBasicParsing [Enable the -UseBasicParsing swicth]
 #
 ########################################################################################################################
 # MODIFICATIONS
@@ -723,6 +725,7 @@ function ShowClusterStatus
 # 0.2		2017.12.22	rahd       	Added parameter $StatusCode
 # 0.3		2018.12.18	rahd       	Corrected Indenture, Versioning, Description and Capitalization acc. to Code review
 # 1.0	    2018.12.18	rahd        Finalized and released Version 1.0
+# 1.1	    2019.01.14	jbym        Added parameter switch $UserBasicParsing + refactored code to use optional switch
 #
 ########################################################################################################################
 # NOTE: 	    CheckUrl requires PowerShell 3.0
@@ -731,18 +734,27 @@ function CheckUrl
 {
     param(
         [Parameter(Position=0, Mandatory=$True)][String]$WebUrl,
-        [Parameter(Position=1)][string]$StatusCode=200
+        [Parameter(Position=1)][string]$StatusCode=200,
+        [Parameter(Position=2)][switch]$UseBasicParsing
     )
 
     ForEach ($Url in $WebUrl){
-    Write-Host "Querying Service $Url :" -NoNewline
-        if ((Invoke-WebRequest -uri $Url).statuscode -eq $StatusCode){
+
+        if($UseBasicParsing){
+            $cmd = Invoke-WebRequest -uri $url -UseBasicParsing
+        }
+        else{
+            $cmd = Invoke-WebRequest -uri $url 
+        }
+
+        Write-Host "Querying Service $Url :" -NoNewline
+        if (($cmd).statuscode -eq $StatusCode){
             Write-Host " URL OK - HTTP code: " -Foregroundcolor Green -NoNewline
-            (Invoke-WebRequest -uri $Url).StatusCode
+            ($cmd).StatusCode
         }
         Else{
             Write-Host " URL ERROR - HTTP code: " -Foregroundcolor Red -NoNewline
-            (Invoke-WebRequest -uri $Url).StatusCode
+            ($cmd).StatusCode
         }    
     }
 }
